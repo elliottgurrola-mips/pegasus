@@ -180,6 +180,13 @@ namespace pegasus
             sim_state_.current_inst = inst;
         }
 
+        void throwException(FaultCause cause)
+        {
+            auto exception_unit = getExceptionUnit();
+            exception_unit->setUnhandledException(cause);
+            throw ActionException(exception_unit->getActionGroup());
+        }
+
         void setCurrentException(uint64_t excp_code) { current_exception_ = excp_code; }
 
         void clearCurrentException() { current_exception_ = std::numeric_limits<ExcpCode>::max(); }
@@ -248,6 +255,11 @@ namespace pegasus
         }
 
         sparta::Register* findRegister(const std::string & reg_name, bool must_exist = true) const;
+
+        inline bool isRegEnabled(uint32_t id) const
+        {
+            return csr_enabled_state_[id];
+        }
 
         // Memory supplement for observing memory reads and writes
         struct MemorySupplement
@@ -351,6 +363,11 @@ namespace pegasus
         waitOnReservationSet_(const sparta::memory::BlockingMemoryIFNode::PostWriteAccess & data);
 
         /*!
+         *  \brief Track registers that are enabled/disabled
+         */
+        void init_csr_enabled_state();
+  
+        /*!
          *  \brief Installs register read/write callback functions to specail registers
          */
         template <typename XLEN> void addCSRRegisterCallbacks_();
@@ -445,6 +462,9 @@ namespace pegasus
         // Cached registers by name
         std::unordered_map<std::string, sparta::Register*> registers_by_name_;
 
+        // Register enabled/disabled state
+        std::vector<bool> csr_enabled_state_;
+
         // Observers
         std::vector<std::unique_ptr<Observer>> observers_;
 
@@ -536,6 +556,12 @@ namespace pegasus
     static inline XLEN READ_CSR_REG(PegasusState* state, uint32_t reg_ident)
     {
         static_assert(std::is_same_v<XLEN, RV64> || std::is_same_v<XLEN, RV32>);
+
+        if (!state->isRegEnabled(reg_ident))
+        {
+            state->throwException(FaultCause::ILLEGAL_INST);
+        }
+
         return state->getCsrRegister(reg_ident)->readWithCheck();
     }
 
@@ -543,6 +569,12 @@ namespace pegasus
     static inline void WRITE_CSR_REG(PegasusState* state, uint32_t reg_ident, uint64_t reg_value)
     {
         static_assert(std::is_same_v<XLEN, RV64> || std::is_same_v<XLEN, RV32>);
+
+        if (!state->isRegEnabled(reg_ident))
+        {
+            state->throwException(FaultCause::ILLEGAL_INST);
+        }
+
         if (const auto mask = pegasus::getCsrBitMask<XLEN>(reg_ident);
             mask != std::numeric_limits<XLEN>::max())
         {
@@ -576,6 +608,12 @@ namespace pegasus
                                       const char* field_name)
     {
         static_assert(std::is_same_v<XLEN, RV64> || std::is_same_v<XLEN, RV32>);
+
+        if (!state->isRegEnabled(reg_ident))
+        {
+            state->throwException(FaultCause::ILLEGAL_INST);
+        }
+
         const auto & csr_bit_range = pegasus::getCsrBitRange<XLEN>(reg_ident, field_name);
         const XLEN field_lsb = csr_bit_range.first;
         const XLEN field_msb = csr_bit_range.second;
@@ -597,6 +635,12 @@ namespace pegasus
                                        const char* field_name, uint64_t field_value)
     {
         static_assert(std::is_same_v<XLEN, RV64> || std::is_same_v<XLEN, RV32>);
+
+        if (!state->isRegEnabled(reg_ident))
+        {
+            state->throwException(FaultCause::ILLEGAL_INST);
+        }
+
         XLEN csr_value = PEEK_CSR_REG<XLEN>(state, reg_ident);
 
         const auto & csr_bit_range = pegasus::getCsrBitRange<XLEN>(reg_ident, field_name);
