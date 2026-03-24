@@ -116,6 +116,11 @@ namespace pegasus
 
         if (reg_type == CsrindRegType::INVALID)
         {
+            if (state->get_ignore_invalid_xiselect())
+            {
+                return 0;
+            }
+
             auto exception_unit = state->getExceptionUnit();
             exception_unit->setUnhandledException(FaultCause::ILLEGAL_INST);
             throw ActionException(exception_unit->getActionGroup());
@@ -138,6 +143,11 @@ namespace pegasus
 
         if (reg_type == CsrindRegType::INVALID)
         {
+            if (state->get_ignore_invalid_xiselect())
+            {
+                return;
+            }
+
             auto exception_unit = state->getExceptionUnit();
             exception_unit->setUnhandledException(FaultCause::ILLEGAL_INST);
             throw ActionException(exception_unit->getActionGroup());
@@ -154,6 +164,11 @@ namespace pegasus
 
         if (reg_type == CsrindRegType::INVALID)
         {
+            if (state->get_ignore_invalid_xiselect())
+            {
+                return 0;
+            }
+
             auto exception_unit = state->getExceptionUnit();
             exception_unit->setUnhandledException(FaultCause::ILLEGAL_INST);
             throw ActionException(exception_unit->getActionGroup());
@@ -170,6 +185,11 @@ namespace pegasus
 
         if (reg_type == CsrindRegType::INVALID)
         {
+            if (state->get_ignore_invalid_xiselect())
+            {
+                return;
+            }
+
             auto exception_unit = state->getExceptionUnit();
             exception_unit->setUnhandledException(FaultCause::ILLEGAL_INST);
             throw ActionException(exception_unit->getActionGroup());

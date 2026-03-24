@@ -76,6 +76,9 @@ namespace pegasus
             PARAMETER(bool, validate_fail_on_first_diff, false,
                       "STF validation pegasus fail on first difference detected")
 
+            PARAMETER(bool, ignore_invalid_xiselect, false,
+                      "Ignore indirect CSR R/W when xiselect is invalid")
+
             // Set by PegasusCore
             HIDDEN_PARAMETER(uint32_t, xlen, 64, "XLEN (either 32 or 64 bit)")
             HIDDEN_PARAMETER(std::string, reg_json_file_path, "",
@@ -321,6 +324,8 @@ namespace pegasus
 
         void storeOnReservationSet(bool occurred) { store_on_resvset_ = occurred; }
 
+        bool get_ignore_invalid_xiselect() const { return ignore_invalid_xiselect_; }
+
       private:
         void onBindTreeEarly_() override;
         void onBindTreeLate_() override;
@@ -383,6 +388,9 @@ namespace pegasus
         const uint64_t validate_trace_begin_;
         const uint64_t validate_inst_begin_;
         const bool validate_fail_on_first_diff_;
+
+        //
+        bool ignore_invalid_xiselect_;
 
         //! Current pc
         Addr pc_ = 0x0;

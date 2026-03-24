@@ -71,6 +71,7 @@ namespace pegasus
         validate_trace_begin_(p->validate_trace_begin),
         validate_inst_begin_(p->validate_inst_begin),
         validate_fail_on_first_diff_(p->validate_fail_on_first_diff),
+        ignore_invalid_xiselect_(p->ignore_invalid_xiselect),
         priv_mode_(getPrivilegeMode(p->priv_mode)),
         inst_logger_(hart_tn, "inst", "Pegasus Instruction Logger"),
         stf_valid_logger_(hart_tn, "stf_valid", "Pegasus STF Validator Logger"),
